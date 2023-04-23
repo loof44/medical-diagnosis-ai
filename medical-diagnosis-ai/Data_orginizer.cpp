@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <limits>
 
 using namespace std;
 
@@ -56,15 +57,31 @@ int main() {
 
 	file.close();
 
+	// Open the output file stream
+    ofstream output_file("disease_data.txt");
+
+    // Print the disease_data map to the output file
+    for (const auto &disease : disease_data) {
+        output_file << "Disease: " << disease.first << endl;
+        output_file << "Symptoms: ";
+        for (const auto &symptom : disease.second) {
+            output_file << symptom << ", ";
+        }
+        output_file << endl << "-----" << endl;
+    }
+
+    // Close the output file stream
+    output_file.close();
+
 	// Print the disease_data map
-	for (const auto &disease : disease_data) {
-		cout << "Disease: " << disease.first << endl;
-		cout << "Symptoms: ";
-		for (const auto &symptom : disease.second) {
-			cout << symptom << ", ";
-		}
-		cout << endl << "-----" << endl;
-	}
+	// for (const auto &disease : disease_data) {
+	// 	cout << "Disease: " << disease.first << endl;
+	// 	cout << "Symptoms: ";
+	// 	for (const auto &symptom : disease.second) {
+	// 		cout << symptom << ", ";
+	// 	}
+	// 	cout << endl << "-----" << endl;
+	// }
 
 	// Write unique symptoms to the symptoms_questionnaire.txt file
 	ofstream symptoms_file("symptoms_questionnaire.txt");

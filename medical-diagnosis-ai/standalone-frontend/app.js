@@ -5,58 +5,36 @@ class Chatbox {
             chatBox: document.querySelector('.chatbox__support'),
             sendButton: document.querySelector('.send__button')
         }
-    
+
         this.state = false;
-        this.initialMessageFetched = false;
         this.messages = [];
     }
-    
-    displayResponse(response) {
-        // Get the chat box and create a new message element
-        const chatBox = document.getElementById('chat-box');
-        const message = document.createElement('div');
-      
-        // Set the message text to the response from the server
-        message.textContent = response.answer;
-      
-        // Add the message to the chat box and scroll to the bottom
-        chatBox.appendChild(message);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }
 
     display() {
         const {openButton, chatBox, sendButton} = this.args;
-    
-        openButton.addEventListener('click', () => {
-            this.toggleState(chatBox);
-            
-        });
-    
-        sendButton.addEventListener('click', () => this.onSendButton(chatBox));
-    
+
+        openButton.addEventListener('click', () => this.toggleState(chatBox))
+
+        sendButton.addEventListener('click', () => this.onSendButton(chatBox))
+
         const node = chatBox.querySelector('input');
         node.addEventListener("keyup", ({key}) => {
             if (key === "Enter") {
-                this.onSendButton(chatBox);
+                this.onSendButton(chatBox)
             }
-        });
+        })
     }
-    
-    
-    
 
     toggleState(chatbox) {
         this.state = !this.state;
-    
+
         // show or hides the box
         if(this.state) {
-            chatbox.classList.add('chatbox--active');
+            chatbox.classList.add('chatbox--active')
         } else {
-            chatbox.classList.remove('chatbox--active');
+            chatbox.classList.remove('chatbox--active')
         }
     }
-    
-    
 
     onSendButton(chatbox) {
         var textField = chatbox.querySelector('input');

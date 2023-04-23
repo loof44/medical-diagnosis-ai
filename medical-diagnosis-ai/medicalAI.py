@@ -11,6 +11,8 @@ import warnings
 import graphviz
 from IPython.display import Image
 import pickle
+from io import StringIO
+from contextlib import redirect_stdout
 
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -58,8 +60,8 @@ indices = np.argsort(importances)[::-1]
 # Decision tree visualization
 dot_data = export_graphviz(trained_classifier, out_file=None, feature_names=columns, class_names=True, filled=True)
 graph = graphviz.Source(dot_data)
-graph.render("decision_tree")  # This will save the decision tree visualization as a PDF file
-Image(graph.pipe(format='png'))  # This will display the decision tree visualization in Jupyter Notebooks
+graph.render("decision_tree")  
+Image(graph.pipe(format='png'))  
 
 
 
@@ -172,133 +174,23 @@ def print_disease(node):
 
 
 
-
-
-
-
-
-# def tree_to_code(tree, feature_names, user_symptom):
-#     tree_ = tree.tree_
-#     feature_name = [
-#         feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-#         for i in tree_.feature
-#     ]
-
-#     chk_dis = ",".join(feature_names).split(",")
-#     symptoms_present = []
-
-#     disease_input = user_symptom
-
-#     def recurse(node, depth):
-#         indent = "  " * depth
-#         if tree_.feature[node] != _tree.TREE_UNDEFINED:
-#             name = feature_name[node]
-#             threshold = tree_.threshold[node]
-
-#             if name == disease_input:
-#                 val = 1
-#             else:
-#                 val = 0
-#             if val <= threshold:
-#                 recurse(tree_.children_left[node], depth + 1)
-#             else:
-#                 symptoms_present.append(name)
-#                 recurse(tree_.children_right[node], depth + 1)
-#         else:
-#             present_disease = print_disease(tree_.value[node])
-
-#             red_cols = reduced_data.columns
-
-#             try:
-#                 symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
-#             except KeyError:
-#                 return [f"Unable to find '{present_disease}' in the reduced_data index. Skipping this entry."]
-
-#             result = ["Are you experiencing any of the following symptoms?"]
-
-#             for syms in list(symptoms_given):
-#                 result.append(syms)
-
-#             return result
-
-#     return recurse(0, 1)
-
-
-# def main(user_input):
-#     global severityDictionary, description_list, precautionDictionary
-#     getSeverityDict()
-#     getDescription()
-#     getprecautionDict()
-
-#     response = ""
-#     with open('model.pkl', 'rb') as f:
-#         model = pickle.load(f)
-
-#     # Replace the `getInfo()` function with a user_input variable
-#     # getInfo()
-#     user_symptom = user_input.strip()
-
-#     try:
-#         result = tree_to_code(trained_classifier, columns, user_symptom)
-#         response = '\n'.join(result)
-#     except Exception as e:
-#         response = f"An error occurred: {str(e)}"
-
-#     return response
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def tree_to_code(tree, feature_names):
+def tree_to_code(tree, feature_names, message):
     tree_ = tree.tree_
     feature_name = [
         feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
         for i in tree_.feature
     ]
 
-    chk_dis=",".join(feature_names).split(",")
+    chk_dis = ",".join(feature_names).split(",")
     symptoms_present = []
 
-    while True:
+    disease_input = message.strip()
+    conf, cnf_dis = check_pattern(chk_dis, disease_input)
+    if conf == 1:
+        disease_input = cnf_dis[0]
+    else:
+        return {'answer': "Enter valid symptom.", 'action': 'error'}
 
-        print("\nEnter the symptom you are experiencing  \t\t",end="->")
-        disease_input = input("")
-        conf,cnf_dis=check_pattern(chk_dis,disease_input)
-        if conf==1:
-            print("searches related to input: ")
-            for num,it in enumerate(cnf_dis):
-                print(num,")",it)
-            if num!=0:
-                print(f"Select the one you meant (0 - {num}):  ", end="")
-                conf_inp = int(input(""))
-            else:
-                conf_inp=0
-
-            disease_input=cnf_dis[conf_inp]
-            break
-            # print("Did you mean: ",cnf_dis,"?(yes/no) :",end="")
-            # conf_inp = input("")
-            # if(conf_inp=="yes"):
-            #     break
-        else:
-            print("Enter valid symptom.")
-
-    while True:
-        try:
-            num_days=int(input("How many days have you had this symptom? : "))
-            break
-        except:
-            print("Enter valid input.")
     def recurse(node, depth):
         indent = "  " * depth
         if tree_.feature[node] != _tree.TREE_UNDEFINED:
@@ -309,134 +201,87 @@ def tree_to_code(tree, feature_names):
                 val = 1
             else:
                 val = 0
-            if  val <= threshold:
+            if val <= threshold:
                 recurse(tree_.children_left[node], depth + 1)
             else:
                 symptoms_present.append(name)
                 recurse(tree_.children_right[node], depth + 1)
         else:
             present_disease = print_disease(tree_.value[node])
-            # print( "You may have " +  present_disease )
-            red_cols = reduced_data.columns 
-            #symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
+
+            red_cols = reduced_data.columns
+
             try:
                 symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
             except KeyError:
-                print(f"Unable to find '{present_disease}' in the reduced_data index. Skipping this entry.")
-                return
+                return {'answer': f"Unable to find '{present_disease}' in the reduced_data index. Skipping this entry.", 'action': 'error'}
 
-            # dis_list=list(symptoms_present)
-            # if len(dis_list)!=0:
-            #     print("symptoms present  " + str(list(symptoms_present)))
-            # print("symptoms given "  +  str(list(symptoms_given)) )
-            print("Are you experiencing any ")
-            symptoms_exp=[]
+            symptoms_exp = []
             for syms in list(symptoms_given):
-                inp=""
-                print(syms,"? : ",end='')
-                while True:
-                    inp=input("")
-                    if(inp=="yes" or inp=="no"):
-                        break
-                    else:
-                        print("provide proper answers i.e. (yes/no) : ",end="")
-                if(inp=="yes"):
-                    symptoms_exp.append(syms)
+                if syms == disease_input:
+                    continue
+                symptoms_exp.append(syms)
 
-            second_prediction=sec_predict(symptoms_exp)
-            # print(second_prediction)
-            calc_condition(symptoms_exp,num_days)
-            if(present_disease[0]==second_prediction[0]):
-                print("You may have ", present_disease[0])
-                print(description_list[present_disease[0]])
+            second_prediction = sec_predict(symptoms_exp)
 
-                # readn(f"You may have {present_disease[0]}")
-                # readn(f"{description_list[present_disease[0]]}")
+            output = ""
+            output += f"You may have {present_disease[0]}\n"
+            output += f"{description_list[present_disease[0]]}\n"
 
-            else:
-                print("You may have ", present_disease[0], "or ", second_prediction[0])
-                print(description_list[present_disease[0]])
-                print(description_list[second_prediction[0]])
+            if present_disease[0] != second_prediction[0]:
+                output += f"Alternatively, you may have {second_prediction[0]}\n"
+                output += f"{description_list[second_prediction[0]]}\n"
 
-            # print(description_list[present_disease[0]])
-            precution_list=precautionDictionary[present_disease[0]]
-            print("Take following measures : ")
-            for  i,j in enumerate(precution_list):
-                print(i+1,")",j)
+            precution_list = precautionDictionary[present_disease[0]]
+            output += "Take the following measures:\n"
+            for i, j in enumerate(precution_list):
+                output += f"{i + 1}) {j}\n"
 
-            # confidence_level = (1.0*len(symptoms_present))/len(symptoms_given)
-            # print("confidence level is " + str(confidence_level))
+            return {'answer': output, 'action': 'diagnosis'}
 
-    recurse(0, 1)
+    return recurse(0, 1)
+
+
+
+
+
 
     
-# getSeverityDict()
-# getDescription()
-# getprecautionDict()
-# getInfo()
+getSeverityDict()
+getDescription()
+getprecautionDict()
 
-red_cols = reduced_data.columns
-# tree_to_code(trained_classifier,columns)
+
+#getInfo()
+
+# red_cols = reduced_data.columns
+#tree_to_code(trained_classifier,columns)
 # print("----------------------------------------------------------------------------------------")
 
 
 
-def make_prediction(symptom_input, num_days):
-    results = {}
-    
-    def recurse(node, depth):
-        nonlocal results
-        indent = "  " * depth
-        if tree_.feature[node] != _tree.TREE_UNDEFINED:
-            name = feature_name[node]
-            threshold = tree_.threshold[node]
-
-            if name == symptom_input:
-                val = 1
-            else:
-                val = 0
-            if  val <= threshold:
-                recurse(tree_.children_left[node], depth + 1)
-            else:
-                symptoms_present.append(name)
-                recurse(tree_.children_right[node], depth + 1)
-        else:
-            present_disease = print_disease(tree_.value[node])
-
-            try:
-                symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
-            except KeyError:
-                results["error"] = f"Unable to find '{present_disease}' in the reduced_data index. Skipping this entry."
-                return results
-
-            symptoms_exp = []
-            for syms in list(symptoms_given):
-                if syms in symptom_input:
-                    symptoms_exp.append(syms)
-
-            second_prediction = sec_predict(symptoms_exp)
-
-            calc_condition(symptoms_exp, num_days)
-
-            if present_disease[0] == second_prediction[0]:
-                results["disease"] = present_disease[0]
-                results["description"] = description_list[present_disease[0]]
-            else:
-                results["disease"] = f"{present_disease[0]} or {second_prediction[0]}"
-                results["description"] = f"{description_list[present_disease[0]]}\n{description_list[second_prediction[0]]}"
-
-            precaution_list = precautionDictionary[present_disease[0]]
-            results["precautions"] = precaution_list
-
-    tree_ = dt_classifier.tree_
-    feature_name = [
-        columns[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-        for i in tree_.feature
-    ]
-
-    symptoms_present = []
-    recurse(0, 1)
-
-    return results
 
 
+
+
+def chat(message, num_days=0):
+    if message.lower() == "hi" or message.lower() == "hello":
+        response = "Hello! I am an AI-based medical assistant. I can help you identify your illness based on your symptoms. Please tell me the symptom you are experiencing."
+
+    elif message.lower() == "quit":
+        response = "Goodbye! If you need further assistance, don't hesitate to ask."
+
+    else:
+        response = tree_to_code(trained_classifier, columns, message)
+
+        if not response or response.get('action') == 'error':
+            response = {
+                'answer': "I'm sorry, I couldn't find a matching disease in the dataset. Please try again with a different symptom or consult a medical professional.",
+                'action': 'error'
+            }
+        elif num_days is not None:
+            condition_response = calc_condition(response.get('symptoms_exp', []), num_days)
+            response['answer'] += f"\n{condition_response}"
+
+    print("Response:", response)  # Keep this line to print the response before returning it
+    return response
