@@ -1,0 +1,16 @@
+This code is an implementation of a Medical Diagnosis Chatbot that provides potential diagnoses based on the user's symptoms. Here are the details:
+
+The first part imports the required libraries and loads four CSV data files using pandas. These files contain information related to various diseases, symptoms, precautions, severity levels, etc.
+
+The next section preprocesses the dataset.csv file to create a dictionary named disease_symptom_data, where each key represents a disease, and its corresponding value is the set of symptoms associated with it.
+
+In the following steps, two more dictionaries: symptom_precaution_data and disease_description_data are created by iterating through the symptom_precaution.csv and disease_description.csv files.
+
+After that, three functions are defined:
+
+heuristic(user_symptoms, disease_symptoms) calculates the heuristic value for a given disease based on the number of common symptoms between the user's input and the disease's symptoms.
+a_star_search(user_symptoms, disease_data, symptom_severity_data, threshold=0.5) performs A* Search on the provided data to find potential diagnoses based on the user's symptoms.
+suggest_symptom(user_symptoms, disease_data, symptom_severity_data, answered_symptoms) suggests a symptom that the user might be experiencing and asks them if they are experiencing it.
+Finally, there is the chatbot(disease_symptom_data, symptom_precaution_data, symptom_severity_data, disease_description_data) function which drives the chatbot's conversation loop. It asks the user to enter their symptoms, then suggests a symptom based on that. If the user confirms experiencing that symptom or not, the program proceeds accordingly. If the user inputs at least three symptoms, the function calls the a_star_search() function to give potential diagnoses, descriptions, and precautions for the matching disease.
+
+In summary, this code loads data from CSV files, preprocesses them, and uses them to drive conversation with the user to diagnose their illness.
