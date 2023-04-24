@@ -1,12 +1,36 @@
-# medical-diagnosis-ai
+# Medical Diagnosis Chatbot
 
-1) install the requirements.txt using the command: 
+A simple Python-based medical diagnosis chatbot that uses heuristic search and a knowledge base of symptoms, precautions, severity, and disease descriptions to help users identify potential diseases based on their symptoms.
 
-pip3 install -r requirements.txt
+## Dependencies
+
+- pandas (https://pandas.pydata.org/)
+
+## Usage
+
+1. Prepare four CSV files with the following content:
+
+   - `dataset.csv`: Contains diseases and their associated symptoms.
+   - `symptom_precaution.csv`: Contains diseases and their associated precautions.
+   - `symptom_severity.csv`: Contains symptoms and their severity level.
+   - `disease_description.csv`: Contains diseases and their descriptions.
+
+2. Install the required dependencies using pip:
+
+pip install pandas
 
 
-2) if needed there is C++ file that would organize the csv file into a knowledge base for a GNU prolog, as the intention of this project was first made for prolog.
+3. Run the chatbot:
 
-there are commented lines in the C++ code that would print out the knowledge base.
+python chatbot.py
 
-3) enjoy
+
+4. Follow the chatbot's prompts to enter your symptoms and answer questions about additional symptoms. The chatbot will then suggest potential diagnoses, along with their descriptions and precautions.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+
