@@ -75,7 +75,7 @@ def chatbot(disease_symptom_data, symptom_precaution_data, symptom_severity_data
     all_asked_symptoms = set()
 
     # Collect initial symptoms
-    while len(user_symptoms) < 3:
+    while len(user_symptoms) < 5:
         symptom_input = input("Please enter a symptom (or type 'done' if no more): ").strip().lower()
         if symptom_input == 'done' and len(user_symptoms) > 0:
             break
@@ -84,7 +84,7 @@ def chatbot(disease_symptom_data, symptom_precaution_data, symptom_severity_data
             all_asked_symptoms.add(symptom_input)
 
     # Suggest additional symptoms if less than 3 symptoms are provided
-    while len(user_symptoms) < 3:
+    while len(user_symptoms) < 5:
         suggested_symptom = suggest_symptom(user_symptoms, disease_symptom_data, symptom_severity_data, all_asked_symptoms)
         if not suggested_symptom:
             break  # No more symptoms to suggest
